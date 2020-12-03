@@ -62,7 +62,9 @@ namespace TelegramBot_Observer.src
 
         private string ReadDataPasswordsBot()
         {
-            FileStream fstream = File.OpenRead(Environment.CurrentDirectory + "\\password_bot.txt");
+            //Test on Windows 
+            //FileStream fstream = File.OpenRead(Environment.CurrentDirectory + "\\password_bot.txt");
+            FileStream fstream = File.OpenRead("~/secret_keys/password_bot.txt"); 
             byte[] array = new byte[fstream.Length];
             fstream.Read(array, 0, array.Length);
             fstream.Close();

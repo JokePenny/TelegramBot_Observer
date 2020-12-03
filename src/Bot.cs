@@ -57,6 +57,7 @@ namespace TelegramBot_Observer.src
 
         protected internal void Disconnect()
         {
+            ConsoleHelper.WriteError("Бот завершил работу");
             Environment.Exit(0); //завершение процесса
         }
 

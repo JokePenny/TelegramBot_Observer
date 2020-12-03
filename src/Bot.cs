@@ -19,6 +19,7 @@ namespace TelegramBot_Observer.src
                 TelegramBotClient botClient = new TelegramBotClient(key);
                 Thread inputThread = new Thread(new ThreadStart(InputCommandBotThread));
                 inputThread.Start();
+                ConsoleHelper.WriteSuccess(key);
                 int offset = 0; // отступ по сообщениям
                 while (true)
                 {

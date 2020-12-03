@@ -18,6 +18,7 @@ namespace TelegramBot_Observer.src
                 ConsoleHelper.WriteSuccess("Бот запущен. Ожидание подключений...\n");
                 string key = ReadDataPasswordsBot();
                 botClient = new TelegramBotClient(key);
+                await botClient.SetWebhookAsync("");
                 Thread inputThread = new Thread(new ThreadStart(InputCommandBotThread));
                 inputThread.Start();
                 int offset = 0; // отступ по сообщениям

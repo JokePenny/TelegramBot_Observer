@@ -18,9 +18,9 @@ namespace TelegramBot_Observer.src
                 ConsoleHelper.WriteSuccess("Бот запущен. Ожидание подключений...\n");
                 string key = ReadDataPasswordsBot();
                 botClient = new TelegramBotClient(key);
-                await botClient.SetWebhookAsync("");
                 Thread inputThread = new Thread(new ThreadStart(InputCommandBotThread));
                 inputThread.Start();
+                await botClient.SetWebhookAsync("");
                 int offset = 0; // отступ по сообщениям
                 while (true)
                 {
@@ -62,9 +62,9 @@ namespace TelegramBot_Observer.src
         private string ReadDataPasswordsBot()
         {
             //Test on Windows 
-            //FileStream fstream = File.OpenRead(Environment.CurrentDirectory + "\\password_bot.txt");
+            FileStream fstream = File.OpenRead(Environment.CurrentDirectory + "\\password_bot.txt");
             //For server
-            FileStream fstream = File.OpenRead("/home/lorne/secret_keys/password_bot.txt"); 
+            //FileStream fstream = File.OpenRead("/home/lorne/secret_keys/password_bot.txt"); 
             byte[] array = new byte[fstream.Length];
             fstream.Read(array, 0, array.Length);
             fstream.Close();

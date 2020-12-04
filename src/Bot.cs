@@ -10,23 +10,24 @@ namespace TelegramBot_Observer.src
 	class Bot
 	{
         protected static TelegramBotClient botClient;
+        private Thread inputThread;
         // прослушивание входящих подключений
         protected internal async void Listen()
         {
             try
             {
-                ConsoleHelper.WriteSuccess("Бот запущен. Ожидание подключений...\n");
-                //string key = ReadDataPasswordsBot();
+                ConsoleHelper.WriteSuccess("Бот запущен.\n");
+                string key = ReadDataPasswordsBot();
                 botClient = new TelegramBotClient(key);
-                Thread inputThread = new Thread(new ThreadStart(InputCommandBotThread));
+                inputThread = new Thread(new ThreadStart(InputCommandBotThread));
                 inputThread.Start();
                 await botClient.SetWebhookAsync("");
-                int offset = 0; // отступ по сообщениям
+                int offset = 0;
                 while (true)
                 {
-                    var updates = await botClient.GetUpdatesAsync(offset); // получаем массив обновлений
+                    var updates = await botClient.GetUpdatesAsync(offset);
 
-                    foreach (var update in updates) // Перебираем все обновления
+                    foreach (var update in updates)
                     {
                         var message = update.Message;
                         if (message.Type == Telegram.Bot.Types.Enums.MessageType.Text)
@@ -49,6 +50,7 @@ namespace TelegramBot_Observer.src
             while (true)
             {
                 string command = Console.ReadLine();
+                if (command == "exit" || command == "quit" || command == "q") break;
                 ConsoleHelper.WriteBotCommand(CommandConsoleBotParser.ApplyCommand(command));
             }
         }
@@ -56,6 +58,7 @@ namespace TelegramBot_Observer.src
         protected internal void Disconnect()
         {
             ConsoleHelper.WriteError("Бот завершил работу");
+            inputThread.Join();
             Environment.Exit(0); //завершение процесса
         }
 
@@ -66,6 +69,7 @@ namespace TelegramBot_Observer.src
             //For server
             FileStream fstream = File.OpenRead("/root/secret_keys/password_bot.txt"); 
             byte[] array = new byte[fstream.Length];
+            Console.Write(array.Length);
             fstream.Read(array, 0, array.Length);
             fstream.Close();
             return Encoding.Default.GetString(array);

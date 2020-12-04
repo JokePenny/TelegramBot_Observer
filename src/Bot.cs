@@ -10,23 +10,24 @@ namespace TelegramBot_Observer.src
 	class Bot
 	{
         protected static TelegramBotClient botClient;
+        private Thread inputThread;
         // прослушивание входящих подключений
         protected internal async void Listen()
         {
             try
             {
-                ConsoleHelper.WriteSuccess("Бот запущен. Ожидание подключений...\n");
+                ConsoleHelper.WriteSuccess("Бот запущен.\n");
                 string key = ReadDataPasswordsBot();
                 botClient = new TelegramBotClient(key);
-                Thread inputThread = new Thread(new ThreadStart(InputCommandBotThread));
+                inputThread = new Thread(new ThreadStart(InputCommandBotThread));
                 inputThread.Start();
                 await botClient.SetWebhookAsync("");
-                int offset = 0; // отступ по сообщениям
+                int offset = 0;
                 while (true)
                 {
-                    var updates = await botClient.GetUpdatesAsync(offset); // получаем массив обновлений
+                    var updates = await botClient.GetUpdatesAsync(offset);
 
-                    foreach (var update in updates) // Перебираем все обновления
+                    foreach (var update in updates)
                     {
                         var message = update.Message;
                         if (message.Type == Telegram.Bot.Types.Enums.MessageType.Text)
@@ -49,6 +50,7 @@ namespace TelegramBot_Observer.src
             while (true)
             {
                 string command = Console.ReadLine();
+                if (command == "exit" || command == "quit" || command == "q") break;
                 ConsoleHelper.WriteBotCommand(CommandConsoleBotParser.ApplyCommand(command));
             }
         }
@@ -56,17 +58,22 @@ namespace TelegramBot_Observer.src
         protected internal void Disconnect()
         {
             ConsoleHelper.WriteError("Бот завершил работу");
-            Environment.Exit(0); //завершение процесса
+            inputThread.Join();
+            Environment.Exit(0);
         }
 
         private string ReadDataPasswordsBot()
         {
             //Test on Windows 
             //FileStream fstream = File.OpenRead(Environment.CurrentDirectory + "\\password_bot.txt");
-            //For server
-            FileStream fstream = File.OpenRead("/home/alex/Desktop/secret_keys/password_bot.txt"); 
+            //For server on Ubuntu
+            FileStream fstream = File.OpenRead("/root/secret_keys/password_bot.txt"); 
             byte[] array = new byte[fstream.Length];
-            fstream.Read(array, 0, array.Length);
+            //Test on Windows 
+            //int lengthKey = array.Length;
+            //For server on Ubuntu
+            int lengthKey = array.Length - 1;
+            fstream.Read(array, 0, lengthKey);
             fstream.Close();
             return Encoding.Default.GetString(array);
         }

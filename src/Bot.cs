@@ -67,13 +67,13 @@ namespace TelegramBot_Observer.src
             //Test on Windows 
             //FileStream fstream = File.OpenRead(Environment.CurrentDirectory + "\\password_bot.txt");
             //For server on Ubuntu
-            FileStream fstream = File.OpenRead("/root/secret_keys/password_bot.txt"); 
-            byte[] array = new byte[fstream.Length];
+            FileStream fstream = File.OpenRead("/home/alex/Desktop/secret_keys/password_bot.txt"); 
             //Test on Windows 
-            //int lengthKey = array.Length;
+            //int lengthFstream = array.Length;
             //For server on Ubuntu
-            int lengthKey = array.Length - 1;
-            fstream.Read(array, 0, lengthKey);
+            long lengthFstream = fstream.Length - 1;
+            byte[] array = new byte[lengthFstream];
+            fstream.Read(array, 0, array.Length);
             fstream.Close();
             return Encoding.Default.GetString(array);
         }

@@ -13,8 +13,8 @@ namespace TelegramBot_Observer
             try
             {
                 bot = new Bot();
-                listenThread = new Thread(new ThreadStart(bot.Listen));
-                listenThread.Start();
+                bot.Listen();
+                string command = Console.ReadLine();
             }
             catch (Exception ex)
             {

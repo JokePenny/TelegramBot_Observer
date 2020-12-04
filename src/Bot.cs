@@ -21,8 +21,6 @@ namespace TelegramBot_Observer.src
                 //ReadProcessObserve();
                 string key = ReadDataPasswordsBot();
                 botClient = new TelegramBotClient(key);
-                inputThread = new Thread(new ThreadStart(InputCommandBotThread));
-                inputThread.Start();
                 await botClient.SetWebhookAsync("");
                 int offset = 0;
                 while (true)
@@ -49,14 +47,6 @@ namespace TelegramBot_Observer.src
             }
         }
 
-        private void InputCommandBotThread()
-        {
-            while (true)
-            {
-                string command = Console.ReadLine();
-            }
-        }
-
         protected internal void Disconnect()
         {
             ConsoleHelper.WriteError("Бот завершил работу");
@@ -66,8 +56,8 @@ namespace TelegramBot_Observer.src
 
         private string ReadDataPasswordsBot()
         {
-            return ReadFile(Environment.CurrentDirectory + "\\password_bot.txt");
-            //return ReadFile("/root/secret_keys/password_bot.txt");
+            //return ReadFile(Environment.CurrentDirectory + "\\password_bot.txt");
+            return ReadFile("/root/secret_keys/password_bot.txt");
         }
 
         private void ReadProcessObserve()
@@ -87,9 +77,9 @@ namespace TelegramBot_Observer.src
 		{
             FileStream fstream = File.OpenRead(path);
             //Test on Windows 
-            //long lengthFstream = array.Length;
+            long lengthFstream = fstream.Length;
             //For server on Ubuntu
-            long lengthFstream = fstream.Length - 1;
+            //long lengthFstream = fstream.Length - 1;
             byte[] array = new byte[lengthFstream];
             fstream.Read(array, 0, array.Length);
             fstream.Close();

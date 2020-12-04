@@ -16,7 +16,7 @@ namespace TelegramBot_Observer.src
             try
             {
                 ConsoleHelper.WriteSuccess("Бот запущен. Ожидание подключений...\n");
-                string key = ReadDataPasswordsBot();
+                //string key = ReadDataPasswordsBot();
                 botClient = new TelegramBotClient(key);
                 Thread inputThread = new Thread(new ThreadStart(InputCommandBotThread));
                 inputThread.Start();

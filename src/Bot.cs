@@ -59,18 +59,21 @@ namespace TelegramBot_Observer.src
         {
             ConsoleHelper.WriteError("Бот завершил работу");
             inputThread.Join();
-            Environment.Exit(0); //завершение процесса
+            Environment.Exit(0);
         }
 
         private string ReadDataPasswordsBot()
         {
             //Test on Windows 
             //FileStream fstream = File.OpenRead(Environment.CurrentDirectory + "\\password_bot.txt");
-            //For server
+            //For server on Ubuntu
             FileStream fstream = File.OpenRead("/root/secret_keys/password_bot.txt"); 
             byte[] array = new byte[fstream.Length];
-            Console.Write(array.Length);
-            fstream.Read(array, 0, array.Length);
+            //Test on Windows 
+            //int lengthKey = array.Length;
+            //For server on Ubuntu
+            int lengthKey = array.Length - 1;
+            fstream.Read(array, 0, lengthKey);
             fstream.Close();
             return Encoding.Default.GetString(array);
         }

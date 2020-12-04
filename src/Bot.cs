@@ -77,7 +77,7 @@ namespace TelegramBot_Observer.src
 		{
             FileStream fstream = File.OpenRead(path);
             //Test on Windows 
-            long lengthFstream = fstream.Length;
+            long lengthFstream = fstream.Length - 1;
             //For server on Ubuntu
             //long lengthFstream = fstream.Length - 1;
             byte[] array = new byte[lengthFstream];

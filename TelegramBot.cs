@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Loader;
 using System.Threading;
 using TelegramBot_Observer.src;
 
@@ -10,6 +11,7 @@ namespace TelegramBot_Observer
         static Thread listenThread; // потока для прослушивания
         static void Main(string[] args)
 		{
+            AssemblyLoadContext.Default.Unloading += SigTermEventHandler;
             try
             {
                 bot = new Bot();
@@ -22,5 +24,10 @@ namespace TelegramBot_Observer
                 Console.WriteLine(ex.Message);
             }
         }
+
+        private static void SigTermEventHandler(AssemblyLoadContext obj)
+		{
+            //Logger
+		}
 	}
 }

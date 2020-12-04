@@ -65,7 +65,6 @@ namespace TelegramBot_Observer.src
             int ignoreSpace = 0;
             for(int i = 0; i < message.Length; i++)
 			{
-                Console.WriteLine(message[i]);
                 if (message[i] == ' ' && findCommand)
                 {
                     arrayMessages[0] = message.Substring(ignoreSpace, i);

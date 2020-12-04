@@ -54,8 +54,6 @@ namespace TelegramBot_Observer.src
             while (true)
             {
                 string command = Console.ReadLine();
-                if (command == "exit" || command == "quit" || command == "q") break;
-                ConsoleHelper.WriteBotCommand(CommandConsoleBotParser.ApplyCommand(command));
             }
         }
 
@@ -74,8 +72,8 @@ namespace TelegramBot_Observer.src
 
         private void ReadProcessObserve()
         {
-            string nameProcess = ReadFile(Environment.CurrentDirectory + "\\name_process_observer.txt");
-            //string nameProcess = ReadFile("/root/secret_keys/name_process_observer.txt");
+            //string nameProcess = ReadFile(Environment.CurrentDirectory + "\\name_process_observer.txt");
+            string nameProcess = ReadFile("/root/secret_keys/name_process_observer.txt");
             if (string.IsNullOrEmpty(nameProcess)) return;
 
             string[] nameArrayProcess = nameProcess.Split(':');
@@ -89,9 +87,9 @@ namespace TelegramBot_Observer.src
 		{
             FileStream fstream = File.OpenRead(path);
             //Test on Windows 
-            //int lengthFstream = array.Length;
+            //long lengthFstream = array.Length;
             //For server on Ubuntu
-            long lengthFstream = fstream.Length;
+            long lengthFstream = fstream.Length - 1;
             byte[] array = new byte[lengthFstream];
             fstream.Read(array, 0, array.Length);
             fstream.Close();

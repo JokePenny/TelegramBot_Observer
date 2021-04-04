@@ -13,13 +13,10 @@ namespace TelegramBot_Observer.src
             "/delete_observe [имя процесса] (удаляет из списка отслеживаний указанный процесс)",
             "/show_list_observe (выводит список отслеживаний)",
             "/clear_list_observe (очистка списка отслеживаний)",
-            "/status (выводит состояние всех процессов в списке отслеживаний)",
-            "/set_alaram [on/off] (включение оповещения об завершении процесса из списка отслеживаний)",
-            "/set_period_diagnostic [1h1m, 1h, 1m] (установка времени, через которое бот будет посылать сообщение об состоянии сервера)",
-            "/set_greeting [строка с приветствием] (устанавливает строку приветствия)"
+            "/show_status (выводит состояние всех процессов в списке отслеживаний)",
         };
 
-        internal static string ApplyCommand(string message)
+        public static string ApplyCommand(string message)
         {
 			try
 			{
@@ -37,14 +34,8 @@ namespace TelegramBot_Observer.src
                         return CommandShowListProcessObserve();
                     case "/clear_list_observe":
                         return CommandClearListProcessObserve();
-                    case "/status":
-                        return "in work";
-                    case "/set_alaram":
-                        return "in work";
-                    case "/set_period_diagnostic":
-                        return "in work";
-                    case "/set_greeting":
-                        return "in work";
+                    case "/show_status":
+                        return CommandShowStatusProcess();
                     default:
                         ConsoleHelper.WriteError("[CS] Unknow command: " + messages[0]);
                         return "Такой команды я не знаю :(";
@@ -97,37 +88,64 @@ namespace TelegramBot_Observer.src
         private static string CommandAddObserve(string message)
         {
             if (string.IsNullOrEmpty(message)) return "Ты забыл указать имя процесса для отслеживания!";
-            if (listNameProccessObserve.Contains(message)) return "Этот процесс уже отслеживается!";
-            listNameProccessObserve.Add(message);
+            if (ProcessObserve.ListNameProccessObserve.Contains(message)) return "Этот процесс уже отслеживается!";
+            SystemGeneral.WriteAppendInfoFile(SystemGeneral.GetPathToProcessObserve(), message);
+            ProcessObserve.AddProcess(message);
             return "Хорошо, я добавила. Буду теперь за ним следить :)";
         }
 
         private static string CommandDeleteObserve(string message)
         {
             if (string.IsNullOrEmpty(message)) return "Ты забыл указать имя процесса за которым больше не надо наблюдать!";
-            if (!listNameProccessObserve.Contains(message)) return "За таким процессом я не наблюдаю!";
-            listNameProccessObserve.Remove(message);
+            if (!ProcessObserve.ListNameProccessObserve.Contains(message)) return "За таким процессом я не наблюдаю!";
+            SystemGeneral.RemoveInfoInFile(SystemGeneral.GetPathToProcessObserve(), message);
+            ProcessObserve.RemoveProcess(message);
             return "Окей, больше не буду наблюдать за этим процессом :)";
         }
 
         private static string CommandShowListProcessObserve()
         {
-            if (listNameProccessObserve.Count == 0) return "Сейчас я ни за кем не наблюдаю!";
+            if (ProcessObserve.ListNameProccessObserve.Count == 0) return "Сейчас я ни за кем не наблюдаю!";
             StringBuilder stringBUilder = new StringBuilder();
-            stringBUilder.Append("Вот список:\n-----------------\n");
-            for (int i = 0; i < listNameProccessObserve.Count; i++)
+            stringBUilder.Append("+------<[Process]>-----+\n");
+            for (int i = 0; i < ProcessObserve.ListNameProccessObserve.Count; i++)
 			{
-                stringBUilder.Append(i + 1 + ") " + listNameProccessObserve[i] + "\n");
+                stringBUilder.Append(i + 1 + ") " + ProcessObserve.ListNameProccessObserve[i] + "\n");
 			}
-            stringBUilder.Append("-----------------\n");
+            stringBUilder.Append("+-----------------------------+\n");
             return stringBUilder.ToString();
         }
 
         private static string CommandClearListProcessObserve()
         {
-            if (listNameProccessObserve.Count == 0) return "Сейчас я ни за кем не наблюдаю!";
-            listNameProccessObserve.Clear();
+            if (ProcessObserve.ListNameProccessObserve.Count == 0) return "Сейчас я ни за кем не наблюдаю!";
+            SystemGeneral.ClearInfoFile(SystemGeneral.GetPathToProcessObserve());
+            ProcessObserve.Clear();
             return "Больше я ни за кем не наблюдаю, буду отдыхать :)";
+        }
+
+        private static string CommandShowStatusProcess()
+        {
+            if (ProcessObserve.ListNameProccessObserve.Count == 0) return "Сейчас я ни за кем не наблюдаю!";
+
+            StringBuilder stringBUilder = new StringBuilder();
+            bool isFindProcess = false;
+            stringBUilder.Append("+------<[Process]>-----+\n");
+            for (int i = 0; i < ProcessObserve.ListNameProccessObserve.Count; i++)
+            {
+                for (int j = 0; j < ProcessObserve.ListNameProccessPushMessageAttention.Count; j++)
+                {
+                    if(ProcessObserve.ListNameProccessPushMessageAttention[j] == ProcessObserve.ListNameProccessObserve[i])
+					{
+                        isFindProcess = true;
+                        break;
+                    }
+                }
+
+                stringBUilder.Append(i + 1 + ") " + ProcessObserve.ListNameProccessObserve[i] + ": " + (isFindProcess ? "work" : "failed") + "\n");
+            }
+            stringBUilder.Append("+-----------------------------+\n");
+            return stringBUilder.ToString();
         }
     }
 }

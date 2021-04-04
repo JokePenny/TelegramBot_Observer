@@ -9,20 +9,40 @@ namespace TelegramBot_Observer.src
 {
 	class Bot
 	{
-        protected static List<string> listNameProccessObserve = new List<string>();
-        protected static TelegramBotClient botClient;
-        private Thread inputThread;
+        public static Bot Instance { get; private set; }
+        private Thread threadProcessObserver;
+        public static TelegramBotClient botClient;
+        public static string ChatId = "638900246";
+
+        public Bot()
+		{
+            if(Instance == null)
+			{
+                Instance = this;
+
+            }
+			else
+			{
+                
+			}
+		}
+
         // прослушивание входящих подключений
         protected internal async void Listen()
         {
             try
             {
-                ConsoleHelper.WriteSuccess("Бот запущен.\n");
-                //ReadProcessObserve();
+                ConsoleHelper.WriteSuccess("Бот запущен");
                 string key = ReadDataPasswordsBot();
+                ProcessObserve processObserver = new ProcessObserve();
                 botClient = new TelegramBotClient(key);
                 await botClient.SetWebhookAsync("");
                 int offset = 0;
+                await botClient.SendTextMessageAsync(ChatId, "Привет, я снова в строю!\nПривожу информацию по серверу:");
+
+                threadProcessObserver = new Thread(processObserver.LookAtProcess);
+                threadProcessObserver.Start();
+
                 while (true)
                 {
                     var updates = await botClient.GetUpdatesAsync(offset);
@@ -33,8 +53,8 @@ namespace TelegramBot_Observer.src
                         if (message.Type == Telegram.Bot.Types.Enums.MessageType.Text)
                         {
                             string messageReturn = CommandBotParser.ApplyCommand(message.Text);
-                            await botClient.SendTextMessageAsync(message.Chat.Id, messageReturn,
-                           replyToMessageId: message.MessageId);
+                            Console.WriteLine(message.Chat.Id);
+                            await botClient.SendTextMessageAsync(message.Chat.Id, messageReturn, replyToMessageId: message.MessageId);
                         }
                         offset = update.Id + 1;
                     }
@@ -45,45 +65,19 @@ namespace TelegramBot_Observer.src
             {
                 Console.WriteLine(ex.Message);
             }
+            if(threadProcessObserver != null) threadProcessObserver.Join();
         }
 
-        protected internal void Disconnect()
+        public async void Disconnect()
         {
+            await botClient.SendTextMessageAsync(ChatId, "Отключаюсь");
             ConsoleHelper.WriteError("Бот завершил работу");
-            inputThread.Join();
             Environment.Exit(0);
         }
 
         private string ReadDataPasswordsBot()
         {
-            //return ReadFile(Environment.CurrentDirectory + "\\password_bot.txt");
-            return ReadFile("/root/secret_keys/password_bot.txt");
-        }
-
-        private void ReadProcessObserve()
-        {
-            //string nameProcess = ReadFile(Environment.CurrentDirectory + "\\name_process_observer.txt");
-            string nameProcess = ReadFile("/root/secret_keys/name_process_observer.txt");
-            if (string.IsNullOrEmpty(nameProcess)) return;
-
-            string[] nameArrayProcess = nameProcess.Split(':');
-            for(int i = 0; i < nameArrayProcess.Length; i++)
-			{
-                listNameProccessObserve.Add(nameArrayProcess[i]);
-            }
-        }
-
-        private string ReadFile(string path)
-		{
-            FileStream fstream = File.OpenRead(path);
-            //Test on Windows 
-            long lengthFstream = fstream.Length - 1;
-            //For server on Ubuntu
-            //long lengthFstream = fstream.Length - 1;
-            byte[] array = new byte[lengthFstream];
-            fstream.Read(array, 0, array.Length);
-            fstream.Close();
-            return Encoding.Default.GetString(array);
+            return SystemGeneral.ReadFile(SystemGeneral.GetPathToToken());
         }
     }
 }

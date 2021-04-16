@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Telegram.Bot.Types;
 
 namespace TelegramBot_Observer.src
 {
@@ -24,6 +23,8 @@ namespace TelegramBot_Observer.src
 
                 switch (messages[0].ToLower())
                 {
+                    case "/start":
+                        return CommandHelp();
                     case "/help":
                         return CommandHelp();
                     case "/add_observe":
@@ -72,6 +73,18 @@ namespace TelegramBot_Observer.src
             if(findCommand && string.IsNullOrEmpty(arrayMessages[1])) arrayMessages[0] = message;
 
             return arrayMessages;
+        }
+
+        private static string CommandStart()
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (int i = 0; i < listCommands.Count; i++)
+            {
+                stringBuilder.Append(listCommands[i]);
+                stringBuilder.Append("\n");
+            }
+            stringBuilder.Append("\n Напиши название процесса, за которым мне стоит следить! :)");
+            return stringBuilder.ToString();
         }
 
         private static string CommandHelp()

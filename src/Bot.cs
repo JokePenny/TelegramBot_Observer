@@ -10,9 +10,10 @@ namespace TelegramBot_Observer.src
 	class Bot
 	{
         public static Bot Instance { get; private set; }
-        private Thread threadProcessObserver;
         public static TelegramBotClient botClient;
-        public static string ChatId = "638900246";
+        public static string ChatId;
+
+        private Thread threadProcessObserver;
 
         public Bot()
 		{
@@ -27,18 +28,17 @@ namespace TelegramBot_Observer.src
 			}
 		}
 
-        // прослушивание входящих подключений
         protected internal async void Listen()
         {
             try
             {
-                ConsoleHelper.WriteSuccess("Бот запущен");
+                ConsoleHelper.WriteSuccess("Bot started");
+
                 string key = ReadDataPasswordsBot();
                 ProcessObserve processObserver = new ProcessObserve();
                 botClient = new TelegramBotClient(key);
                 await botClient.SetWebhookAsync("");
                 int offset = 0;
-                await botClient.SendTextMessageAsync(ChatId, "Привет, я снова в строю!\nПривожу информацию по серверу:");
 
                 threadProcessObserver = new Thread(processObserver.LookAtProcess);
                 threadProcessObserver.Start();
@@ -68,10 +68,9 @@ namespace TelegramBot_Observer.src
             if(threadProcessObserver != null) threadProcessObserver.Join();
         }
 
-        public async void Disconnect()
+        public void Disconnect()
         {
-            await botClient.SendTextMessageAsync(ChatId, "Отключаюсь");
-            ConsoleHelper.WriteError("Бот завершил работу");
+            ConsoleHelper.WriteError("Bot disconnect");
             Environment.Exit(0);
         }
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -7,6 +6,13 @@ namespace TelegramBot_Observer.src
 {
 	public static class SystemGeneral
 	{
+        private static string pathFileTokenBotLinux = "/root/secret_keys/password_bot.txt";
+        private static string pathFileTokenBotWindows = "\\password_bot.txt";
+        private static string pathFileObserveProcessLinux = "/root/secret_keys/name_process_observer.txt";
+        private static string pathFileObserveProcessWindows = "\\name_process_observer.txt";
+        private static string pathFileChatIdLinux = "/root/secret_keys/name_process_observer.txt";
+        private static string pathFileChatIdWindows = "\\name_process_observer.txt";
+
         private static bool IsLinux
         {
             get
@@ -18,14 +24,20 @@ namespace TelegramBot_Observer.src
 
         public static string GetPathToToken()
 		{
-            return IsLinux ? "/root/secret_keys/password_bot.txt"
-                : Environment.CurrentDirectory + "\\password_bot.txt";
+            return IsLinux ? pathFileTokenBotLinux
+                : Environment.CurrentDirectory + pathFileTokenBotWindows;
         }
 
         public static string GetPathToProcessObserve()
         {
-            return IsLinux ? "/root/secret_keys/name_process_observer.txt"
-                : Environment.CurrentDirectory + "\\name_process_observer.txt";
+            return IsLinux ? pathFileObserveProcessLinux
+                : Environment.CurrentDirectory + pathFileObserveProcessWindows;
+        }
+
+        public static string GetPathToChatId()
+        {
+            return IsLinux ? pathFileChatIdLinux
+                : Environment.CurrentDirectory + pathFileChatIdWindows;
         }
 
         public static string ReadFile(string path)
@@ -40,7 +52,7 @@ namespace TelegramBot_Observer.src
 
         public static void WriteAppendInfoFile(string path, string info)
         {
-            using (StreamWriter sw = new StreamWriter(path, true, System.Text.Encoding.Default))
+            using (StreamWriter sw = new StreamWriter(path, true, Encoding.Default))
             {
                 sw.WriteLine(info);
             }

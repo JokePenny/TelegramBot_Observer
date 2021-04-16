@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using System.Threading;
 
 namespace TelegramBot_Observer.src
 {
 	class ProcessObserve
 	{
+		private const int timeSleep = 10000;
 		public static List<string> ListNameProccessObserve { get; private set; }
 		public static List<string> ListNameProccessPushMessageAttention { get; private set; }
 
@@ -66,7 +65,7 @@ namespace TelegramBot_Observer.src
 					}
 				}
 
-				Thread.Sleep(5000);
+				Thread.Sleep(timeSleep);
 			}
 		}
 

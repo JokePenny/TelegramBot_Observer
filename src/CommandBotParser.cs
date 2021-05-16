@@ -6,27 +6,62 @@ namespace TelegramBot_Observer.src
 {
     class CommandBotParser : Bot
     {
-        private static List<string> listCommands = new List<string>()
+        private static List<string> commands = new List<string>
         {
-            "/add_observe [имя процесса] (добавляет в список отслеживаний указанный процесс)",
-            "/delete_observe [имя процесса] (удаляет из списка отслеживаний указанный процесс)",
-            "/show_list_observe (выводит список отслеживаний)",
-            "/clear_list_observe (очистка списка отслеживаний)",
-            "/show_status (выводит состояние всех процессов в списке отслеживаний)",
+            "/add_observe",
+            "/delete_observe",
+            "/show_list_observe",
+            "/clear_list_observe",
+            "/show_status",
+            "/add_user",
+            "/delete_user",
         };
 
-        public static string ApplyCommand(string message)
+        private static Dictionary<string, string> dictionaryCommandsDescription = new Dictionary<string, string>
+        {
+            {"/add_observe","/add_observe [имя процесса] (добавляет в список отслеживаний указанный процесс)"},
+            {"/delete_observe","/delete_observe [имя процесса] (удаляет из списка отслеживаний указанный процесс)"},
+            {"/show_list_observe","/show_list_observe (выводит список отслеживаний)"},
+            {"/clear_list_observe","/clear_list_observe (очистка списка отслеживаний)"},
+            {"/show_status","/show_status (выводит состояние всех процессов в списке отслеживаний)"},
+            {"/add_user","/add_user [chat_id] [уровень доступа] (добавляет нового пользователя для бота)"},
+            {"/delete_user","/delete_user [chat_id] (удаляет пользователя)"},
+        };
+
+        private static Dictionary<string, int> dictionaryCommands = new Dictionary<string, int>
+        {
+            {"/login", 0},
+            {"/add_observe", 1},
+            {"/delete_observe", 1},
+            {"/show_list_observe", 0},
+            {"/clear_list_observe", 1},
+            {"/show_status", 0},
+            {"/add_user", 2},
+            {"/delete_user", 2},
+        };
+
+        public static string ApplyCommand(string message, int accessLevel)
         {
 			try
 			{
                 string[] messages = SplitCommand(message);
 
+                if(dictionaryCommands.ContainsKey(messages[0].ToLower()))
+				{
+                    if (dictionaryCommands[messages[0].ToLower()] > accessLevel)
+                    {
+                        return "Низкий уровень доступа для данной команды!";
+                    }
+                }
+				else
+				{
+                    return "Такой команды я не знаю :(";
+                }
+
                 switch (messages[0].ToLower())
                 {
-                    case "/start":
-                        return CommandHelp();
                     case "/help":
-                        return CommandHelp();
+                        return CommandHelp(accessLevel);
                     case "/add_observe":
                         return CommandAddObserve(messages[1]);
                     case "/delete_observe":
@@ -37,8 +72,13 @@ namespace TelegramBot_Observer.src
                         return CommandClearListProcessObserve();
                     case "/show_status":
                         return CommandShowStatusProcess();
+                    case "/add_user":
+                        return "not work";
+                    case "/delete_user":
+                        return "not work";
+                    case "/login":
+                        return "Вы уже авторизовались";
                     default:
-                        ConsoleHelper.WriteError("[CS] Unknow command: " + messages[0]);
                         return "Такой команды я не знаю :(";
                 }
 			}
@@ -48,6 +88,34 @@ namespace TelegramBot_Observer.src
                 return "Что-то мне плохо :(";
 			}
 		}
+
+        public static string ApplyCommandLogIn(string message, long chatId)
+        {
+            try
+            {
+                string[] messages = SplitCommand(message);
+
+                if(messages[0].ToLower() == "/login")
+				{
+                    string passwordUser = postgreSqlController.GetPasswordUser(chatId);
+                    if(messages[1] == passwordUser)
+					{
+                        redisController.SetLogInUser(chatId);
+                        return "Авторизация пройдена успешно!";
+                    }
+                    return "Пароль неверный :(";
+                }
+				else
+				{
+                    return "Для авторизации введите:\n/login [пароль]";
+                }
+            }
+            catch (Exception error)
+            {
+                ConsoleHelper.WriteError(error.Message);
+                return "Что-то мне плохо :(";
+            }
+        }
 
         private static string[] SplitCommand(string message)
 		{
@@ -75,25 +143,16 @@ namespace TelegramBot_Observer.src
             return arrayMessages;
         }
 
-        private static string CommandStart()
+        private static string CommandHelp(int accessLevel)
         {
             StringBuilder stringBuilder = new StringBuilder();
-            for (int i = 0; i < listCommands.Count; i++)
+            for (int i = 0; i < commands.Count; i++)
             {
-                stringBuilder.Append(listCommands[i]);
-                stringBuilder.Append("\n");
-            }
-            stringBuilder.Append("\n Напиши название процесса, за которым мне стоит следить! :)");
-            return stringBuilder.ToString();
-        }
-
-        private static string CommandHelp()
-        {
-            StringBuilder stringBuilder = new StringBuilder();
-            for (int i = 0; i < listCommands.Count; i++)
-            {
-                stringBuilder.Append(listCommands[i]);
-                stringBuilder.Append("\n");
+                if(dictionaryCommands[commands[i]] <= accessLevel)
+				{
+                    stringBuilder.Append(dictionaryCommandsDescription[commands[i]]);
+                    stringBuilder.Append("\n");
+                }
             }
             return stringBuilder.ToString();
         }
@@ -102,7 +161,7 @@ namespace TelegramBot_Observer.src
         {
             if (string.IsNullOrEmpty(message)) return "Ты забыл указать имя процесса для отслеживания!";
             if (ProcessObserve.ListNameProccessObserve.Contains(message)) return "Этот процесс уже отслеживается!";
-            SystemGeneral.WriteAppendInfoFile(SystemGeneral.GetPathToProcessObserve(), message);
+            postgreSqlController.AddProcessObserve(message);
             ProcessObserve.AddProcess(message);
             return "Хорошо, я добавила. Буду теперь за ним следить :)";
         }
@@ -111,7 +170,7 @@ namespace TelegramBot_Observer.src
         {
             if (string.IsNullOrEmpty(message)) return "Ты забыл указать имя процесса за которым больше не надо наблюдать!";
             if (!ProcessObserve.ListNameProccessObserve.Contains(message)) return "За таким процессом я не наблюдаю!";
-            SystemGeneral.RemoveInfoInFile(SystemGeneral.GetPathToProcessObserve(), message);
+            postgreSqlController.DeleteProcessObserve(message);
             ProcessObserve.RemoveProcess(message);
             return "Окей, больше не буду наблюдать за этим процессом :)";
         }
@@ -132,7 +191,7 @@ namespace TelegramBot_Observer.src
         private static string CommandClearListProcessObserve()
         {
             if (ProcessObserve.ListNameProccessObserve.Count == 0) return "Сейчас я ни за кем не наблюдаю!";
-            SystemGeneral.ClearInfoFile(SystemGeneral.GetPathToProcessObserve());
+            postgreSqlController.ClearProcessObserve();
             ProcessObserve.Clear();
             return "Больше я ни за кем не наблюдаю, буду отдыхать :)";
         }
@@ -146,9 +205,9 @@ namespace TelegramBot_Observer.src
             stringBUilder.Append("+------<[Process]>-----+\n");
             for (int i = 0; i < ProcessObserve.ListNameProccessObserve.Count; i++)
             {
-                for (int j = 0; j < ProcessObserve.ListNameProccessPushMessageAttention.Count; j++)
+                for (int j = 0; j < ProcessObserve.ListProcForPushMessageAttention.Count; j++)
                 {
-                    if(ProcessObserve.ListNameProccessPushMessageAttention[j] == ProcessObserve.ListNameProccessObserve[i])
+                    if(ProcessObserve.ListProcForPushMessageAttention[j] == ProcessObserve.ListNameProccessObserve[i])
 					{
                         isFindProcess = true;
                         break;
